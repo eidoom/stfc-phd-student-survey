@@ -4,27 +4,20 @@
 from configparser import ConfigParser
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 
-
-# from selenium.webdriver.common.keys import Keys
 
 class Data:
     def __init__(self, settings_file="config.cfg"):
         config = ConfigParser()
         config.read(settings_file)
 
-        webpage = config["webpage"]
-        self.site = webpage["site"]
-        self.title = webpage["title"]
+        for section in ("web_page", "details"):
+            for key, value in config[section].items():
+                setattr(self, key, value)
 
-        details = config["details"]
-        self.forename = details["forename"].title()
-        self.surname = details["surname"].title()
-        self.email = details["email"]
-        self.gender = details["gender"].title()
-        self.university = details["university"].title()
-        self.department = details["department"].title()
-        self.studentship_type = details["studentship_type"]
+        for key, value in config["details_capitalise"].items():
+            setattr(self, key, value.title())
 
 
 class Scraper:
@@ -43,6 +36,28 @@ class Scraper:
     def next_page(self):
         next_button = self.driver.find_element_by_xpath("//button[@class='btn btn-next']")
         next_button.click()
+
+    def click_circle_nested(self, field):
+        field_name = " ".join(field.split("_"))
+        try:
+            selection = self.driver.find_element_by_xpath(
+                f"//strong[contains(text(),'{field_name}')]/../../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input")
+        except NoSuchElementException:
+            selection = self.driver.find_element_by_xpath(
+                f"//strong[contains(text(),'{field_name}')]/../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input")
+        selection.click()
+
+    def click_circle(self, field):
+        selection = self.driver.find_element_by_xpath(
+            f"//label[contains(text(), '{getattr(self.data, field)}')]/../input")
+        selection.click()
+
+    def row_choice(self, *fields):
+        for field in fields:
+            value = 1 if eval(getattr(self.data, field)) else 3
+            selection = self.driver.find_element_by_xpath(
+                f"//th[contains(text(),'{field}')]/../td/input[@value='{value}']")
+            selection.click()
 
 
 def main():
@@ -68,9 +83,33 @@ def main():
         f"//div[contains(text(), '{data.university}')]/../div/div/label[contains(text(), '{data.department}')]/../input")
     department.click()
 
-    studentship_type = driver.find_element_by_xpath(
-        f"//label[contains(text(), '{data.studentship_type}')]/../input")
-    studentship_type.click()
+    scraper.click_circle("studentship_type")
+
+    scraper.next_page()
+
+    scraper.click_circle("research_field")
+    scraper.click_circle("funding_form")
+    scraper.click_circle("year")
+    scraper.click_circle("time_basis")
+    scraper.click_circle("discussed_funding_period")
+    scraper.drop_down_input("funded_period")
+
+    scraper.next_page()
+
+    if data.year == "First":
+        scraper.row_choice("subject", "pursue", "enhance", "plans", "alternative")
+        scraper.click_circle("rate_induction")
+        scraper.next_page()
+
+    scraper.click_circle_nested("how_often_do_you_discuss_your_research_with_your_supervisor")
+    scraper.click_circle("receive_help/advice_from_a_second_supervisor_or_other_people")
+
+    supervision_useful = driver.find_element_by_xpath(f"//input[@value='{data.supervision_useful}']")
+    supervision_useful.click()
+
+    scraper.click_circle_nested("opportunity_to_attend_group_/_departmental_seminars")
+    scraper.click_circle_nested("any_problems_or_difficulties_with_your_supervisory_team")
+    scraper.click_circle_nested("any_problems_or_difficulties_with_other_members_of_your_department")
 
     scraper.next_page()
 

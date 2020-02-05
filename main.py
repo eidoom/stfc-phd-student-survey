@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from configparser import ConfigParser
+from datetime import datetime
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -62,6 +63,8 @@ class Scraper:
 
 def main():
     data = Data()
+    print(data.site + str(datetime.now().year))
+    exit()
     driver = webdriver.Chrome()
     driver.get(data.site)
     assert data.title == driver.title

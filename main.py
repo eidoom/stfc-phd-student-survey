@@ -20,6 +20,9 @@ class Data:
         for key, value in config["details_capitalise"].items():
             setattr(self, key, value.title())
 
+        self.site += str(datetime.now().year)
+        self.title += f" {datetime.now().year}"
+
 
 class Scraper:
     def __init__(self, driver, data):
@@ -63,8 +66,6 @@ class Scraper:
 
 def main():
     data = Data()
-    print(data.site + str(datetime.now().year))
-    exit()
     driver = webdriver.Chrome()
     driver.get(data.site)
     assert data.title == driver.title

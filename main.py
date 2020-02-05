@@ -30,42 +30,53 @@ class Scraper:
         self.data = data
 
     def text_input(self, field):
-        selection = self.driver.find_element_by_xpath(f"//th[contains(text(),'{field.capitalize()}')]/../td/input")
+        selection = self.driver.find_element_by_xpath(
+            f"//th[contains(text(),'{field.capitalize()}')]/../td/input"
+        )
         selection.send_keys(getattr(self.data, field))
 
     def drop_down_input(self, field):
-        selection = self.driver.find_element_by_xpath(f"//option[contains(text(),'{getattr(self.data, field)}')]")
+        selection = self.driver.find_element_by_xpath(
+            f"//option[contains(text(),'{getattr(self.data, field)}')]"
+        )
         selection.click()
 
     def next_page(self):
-        next_button = self.driver.find_element_by_xpath("//button[@class='btn btn-next']")
+        next_button = self.driver.find_element_by_xpath(
+            "//button[@class='btn btn-next']"
+        )
         next_button.click()
 
     def click_circle_nested(self, field):
         field_name = " ".join(field.split("_"))
         try:
             selection = self.driver.find_element_by_xpath(
-                f"//strong[contains(text(),'{field_name}')]/../../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input")
+                f"//strong[contains(text(),'{field_name}')]/../../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input"
+            )
         except NoSuchElementException:
             selection = self.driver.find_element_by_xpath(
-                f"//strong[contains(text(),'{field_name}')]/../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input")
+                f"//strong[contains(text(),'{field_name}')]/../../div/div/label[contains(text(), '{getattr(self.data, field)}')]/../input"
+            )
         selection.click()
 
     def click_circle(self, field):
         selection = self.driver.find_element_by_xpath(
-            f"//label[contains(text(), '{getattr(self.data, field)}')]/../input")
+            f"//label[contains(text(), '{getattr(self.data, field)}')]/../input"
+        )
         selection.click()
 
     def row_choice(self, *fields):
         for field in fields:
             value = 1 if eval(getattr(self.data, field)) else 3
             selection = self.driver.find_element_by_xpath(
-                f"//th[contains(text(),'{field}')]/../td/input[@value='{value}']")
+                f"//th[contains(text(),'{field}')]/../td/input[@value='{value}']"
+            )
             selection.click()
 
     def change_view(self, field):
         selection = self.driver.find_element_by_xpath(
-            f"//button[contains(text(),'{field}')]")
+            f"//button[contains(text(),'{field}')]"
+        )
         selection.click()
 
 
@@ -82,14 +93,17 @@ def main():
     scraper.text_input("forename")
     scraper.text_input("surname")
 
-    email = driver.find_element_by_xpath("//th[contains(text(), 'Email address')]/../td/input")
+    email = driver.find_element_by_xpath(
+        "//th[contains(text(), 'Email address')]/../td/input"
+    )
     email.send_keys(data.email)
 
     scraper.drop_down_input("gender")
     scraper.drop_down_input("university")
 
     department = driver.find_element_by_xpath(
-        f"//div[contains(text(), '{data.university}')]/../div/div/label[contains(text(), '{data.department}')]/../input")
+        f"//div[contains(text(), '{data.university}')]/../div/div/label[contains(text(), '{data.department}')]/../input"
+    )
     department.click()
 
     scraper.click_circle("studentship_type")
@@ -110,17 +124,26 @@ def main():
         scraper.click_circle("rate_induction")
         scraper.next_page()
 
-    scraper.click_circle_nested("how_often_do_you_discuss_your_research_with_your_supervisor")
+    scraper.click_circle_nested(
+        "how_often_do_you_discuss_your_research_with_your_supervisor"
+    )
     scraper.click_circle("receive_help/advice_from_a_second_supervisor_or_other_people")
 
     scraper.click_circle_nested("opportunity_to_attend_group_/_departmental_seminars")
-    scraper.click_circle_nested("any_problems_or_difficulties_with_your_supervisory_team")
-    scraper.click_circle_nested("any_problems_or_difficulties_with_other_members_of_your_department")
+    scraper.click_circle_nested(
+        "any_problems_or_difficulties_with_your_supervisory_team"
+    )
+    scraper.click_circle_nested(
+        "any_problems_or_difficulties_with_other_members_of_your_department"
+    )
 
     scraper.change_view("view as separate questions instead?")
     scraper.click_circle("how_useful_is_the_supervision_that_you_receive")
 
     scraper.next_page()
+
+    scraper.click_circle("formal_training")
+    # scraper.click_circle_nested("received_training")
 
     input("Press any key when done ")
     driver.close()

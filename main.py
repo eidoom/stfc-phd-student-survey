@@ -63,6 +63,11 @@ class Scraper:
                 f"//th[contains(text(),'{field}')]/../td/input[@value='{value}']")
             selection.click()
 
+    def change_view(self, field):
+        selection = self.driver.find_element_by_xpath(
+            f"//button[contains(text(),'{field}')]")
+        selection.click()
+
 
 def main():
     data = Data()
@@ -108,12 +113,12 @@ def main():
     scraper.click_circle_nested("how_often_do_you_discuss_your_research_with_your_supervisor")
     scraper.click_circle("receive_help/advice_from_a_second_supervisor_or_other_people")
 
-    supervision_useful = driver.find_element_by_xpath(f"//input[@value='{data.supervision_useful}']")
-    supervision_useful.click()
-
     scraper.click_circle_nested("opportunity_to_attend_group_/_departmental_seminars")
     scraper.click_circle_nested("any_problems_or_difficulties_with_your_supervisory_team")
     scraper.click_circle_nested("any_problems_or_difficulties_with_other_members_of_your_department")
+
+    scraper.change_view("view as separate questions instead?")
+    scraper.click_circle("how_useful_is_the_supervision_that_you_receive")
 
     scraper.next_page()
 

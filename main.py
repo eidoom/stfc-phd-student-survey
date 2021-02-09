@@ -82,7 +82,7 @@ class Scraper:
 
 def main():
     data = Data()
-    driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
     driver.get(data.site)
     assert data.title == driver.title
 
